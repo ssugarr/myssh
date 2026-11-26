@@ -114,7 +114,7 @@ $help = myssh help *>&1 | Out-String
 Assert-True ($help -match '跳板') 'help mentions jump'
 Assert-True ($help -notmatch 'tunnel add') 'help has no tunnel add'
 $ver = myssh version *>&1 | Out-String
-Assert-True ($ver -match '0\.3\.0') 'version 0.3.0'
+Assert-True ($ver -match '0\.3\.1') 'version 0.3.1'
 $tun = myssh tunnel *>&1 | Out-String
 Assert-True ($tun -match '已移除' -or $tun -match '跳板') 'tunnel command guides to jump'
 $status = myssh status *>&1 | Out-String
@@ -123,7 +123,7 @@ Assert-True ($status -notmatch 'tunnels') 'status has no tunnels line'
 
 $bin = Join-Path $moduleRoot 'bin\myssh.ps1'
 $binOut = & pwsh -NoProfile -File $bin version *>&1 | Out-String
-Assert-True ($binOut -match '0\.3\.0') 'bin entrypoint version'
+Assert-True ($binOut -match '0\.3\.1') 'bin entrypoint version'
 
 myssh remove direct --force | Out-Null
 Assert-True (-not ((Read-MySshConfig).hosts.Contains('direct'))) 'host removed'

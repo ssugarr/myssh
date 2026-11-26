@@ -98,5 +98,8 @@ Write-Host '  myssh list'
 Write-Host '  myssh <alias>          # connect / jump login'
 Write-Host '  myssh help'
 Write-Host ''
+Write-Host 'Uninstall later:'
+Write-Host '  pwsh -File .\uninstall.ps1'
+Write-Host ''
 Write-Host '若新开的终端仍找不到 myssh，请重新打开 Windows Terminal。' -ForegroundColor DarkGray
 Write-Host ''

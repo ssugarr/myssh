@@ -1,5 +1,9 @@
 ﻿# Config & state persistence under ~/.myssh
 
+function Get-MySshVersion {
+    '0.3.1'
+}
+
 function Get-MySshHome {
     if ($env:MYSSH_HOME -and -not [string]::IsNullOrWhiteSpace($env:MYSSH_HOME)) {
         return $env:MYSSH_HOME.Trim()

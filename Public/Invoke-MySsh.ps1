@@ -65,7 +65,7 @@
 
         switch ($cmd) {
             'version' {
-                Write-Host 'myssh 0.3.0'
+                Write-Host ("myssh " + (Get-MySshVersion))
                 return
             }
             'status' {

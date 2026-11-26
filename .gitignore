@@ -3,6 +3,8 @@
 *.tmp
 .DS_Store
 Thumbs.db
+*.user
+*.bak
 
 # Editor / IDE
 .vscode/

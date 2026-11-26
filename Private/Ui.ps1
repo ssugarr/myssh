@@ -187,7 +187,7 @@ function Show-MySshStatus {
 function Show-MySshHelp {
     $s = Get-MySshStyle
     Write-Host ""
-    Write-Host "$($s.Title)$($s.Bold)myssh$($s.Reset)  —  Windows SSH 连接 / 跳板登录  $($s.Dim)v0.3.0$($s.Reset)"
+    Write-Host "$($s.Title)$($s.Bold)myssh$($s.Reset)  —  Windows SSH 连接 / 跳板登录  $($s.Dim)v$(Get-MySshVersion)$($s.Reset)"
     Write-Host ""
     Write-Host "$($s.Bold)两种用法$($s.Reset)"
     Write-Host "  1. 直连可达主机           →  myssh <alias>"

@@ -4,4 +4,6 @@ $ErrorActionPreference = 'Stop'
 $moduleManifest = Join-Path (Split-Path $PSScriptRoot -Parent) 'myssh.psd1'
 Import-Module $moduleManifest -Force
 myssh @args
-exit $LASTEXITCODE
+$code = $LASTEXITCODE
+if ($null -eq $code) { $code = 0 }
+exit $code
