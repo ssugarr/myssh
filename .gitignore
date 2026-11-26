@@ -1,0 +1,25 @@
+# PowerShell / local
+*.log
+*.tmp
+.DS_Store
+Thumbs.db
+
+# Editor / IDE
+.vscode/
+.idea/
+*.swp
+*~
+
+# Local test leftovers
+_test_*.ps1
+*.dpapi
+
+# Never commit real secrets or personal SSH home
+.myssh/
+secrets/
+askpass.cmd
+askpass.ps1
+askpass.order
+state.json
+config.json
+logs/
