@@ -1,11 +1,17 @@
 # Changelog
 
+## 0.4.0 — packaging & GitHub Releases
+
+- Stable per-user install under `%LOCALAPPDATA%\Programs\myssh` (CLI on PATH)
+- Zip package with `Setup.cmd` + optional MSI via WiX
+- GitHub Actions Release workflow (`v*` tags)
+- Updated uninstall to clean install dir + PATH
+
 ## 0.3.1 — polish
 
 - Add `uninstall.ps1`
 - Add GitHub Actions CI for unit tests
 - Centralize version string; improve README / install UX
-- Keep jump-host login as the supported model (port-forward tunnels removed in 0.3.0)
 
 ## 0.3.0
 

@@ -26,3 +26,10 @@ jobs:
           $ErrorActionPreference = 'Stop'
           & pwsh -NoProfile -File ./tests/run-tests.ps1
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+      - name: Smoke build release zip
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          & ./scripts/Build-Release.ps1 -SkipMsi
+          if (-not (Test-Path ./dist/*.zip)) { throw 'zip missing' }

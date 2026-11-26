@@ -1,22 +1,23 @@
 ﻿#Requires -Version 7.0
 <#
 .SYNOPSIS
-    Uninstall myssh for the current user (module, PATH entry, Profile block).
+    Uninstall myssh CLI for the current user.
 .EXAMPLE
     ./uninstall.ps1
 #>
 [CmdletBinding()]
-param(
-    [switch]$KeepConfig
-)
+param()
 
 $ErrorActionPreference = 'Stop'
-$bin = Join-Path $PSScriptRoot 'bin'
+
+$installRoot = Join-Path $env:LOCALAPPDATA 'Programs\myssh'
+$bin = Join-Path $installRoot 'bin'
+$scriptRoot = $PSScriptRoot
 
 Write-Host ''
 Write-Host 'Uninstalling myssh ...' -ForegroundColor Cyan
 
-# 1) Remove module from user Modules
+# 1) Remove PowerShell module
 $userModuleRoot = Join-Path $HOME 'Documents\PowerShell\Modules'
 $targetModule = Join-Path $userModuleRoot 'myssh'
 if (Test-Path -LiteralPath $targetModule) {
@@ -27,24 +28,42 @@ else {
     Write-Host '  module: not found (skip)'
 }
 
-# 2) Remove bin from user PATH
+# 2) Remove install tree
+if (Test-Path -LiteralPath $installRoot) {
+    Remove-Item -LiteralPath $installRoot -Recurse -Force
+    Write-Host "  files: removed $installRoot"
+}
+else {
+    Write-Host '  files: install dir not found (skip)'
+}
+
+# 3) Clean User PATH (install bin + any ...\myssh\bin + this script's bin if run from a zip)
 $userPath = [Environment]::GetEnvironmentVariable('Path', 'User')
 if ($userPath) {
+    $removeBins = @(
+        $bin,
+        (Join-Path $scriptRoot 'bin')
+    )
     $parts = @(
         $userPath.Split(';', [System.StringSplitOptions]::RemoveEmptyEntries) |
-            Where-Object { $_ -ne $bin -and $_ -ne ($bin.TrimEnd('\') + '\') }
+            Where-Object {
+                $p = $_
+                -not ($removeBins -contains $p) -and
+                $p -notmatch '[\\/]myssh[\\/]bin\\?$' -and
+                $p -notmatch '[\\/]Programs[\\/]myssh[\\/]bin\\?$'
+            }
     )
     $newPath = $parts -join ';'
     if ($newPath -ne $userPath) {
         [Environment]::SetEnvironmentVariable('Path', $newPath, 'User')
-        Write-Host "  PATH: removed $bin"
+        Write-Host '  PATH: cleaned myssh entries'
     }
     else {
-        Write-Host '  PATH: no myssh bin entry (skip)'
+        Write-Host '  PATH: no myssh entry (skip)'
     }
 }
 
-# 3) Remove Profile autoload block
+# 4) Remove Profile block
 $profilePath = $PROFILE.CurrentUserCurrentHost
 if (Test-Path -LiteralPath $profilePath) {
     $raw = Get-Content -LiteralPath $profilePath -Raw -ErrorAction SilentlyContinue
@@ -58,19 +77,16 @@ if (Test-Path -LiteralPath $profilePath) {
     }
 }
 
-# 4) Optional: remove ~/.myssh
-if (-not $KeepConfig) {
-    $cfgHome = if ($env:MYSSH_HOME) { $env:MYSSH_HOME } else { Join-Path $HOME '.myssh' }
-    if (Test-Path -LiteralPath $cfgHome) {
-        Write-Host ''
-        Write-Host "配置目录仍在: $cfgHome" -ForegroundColor DarkGray
-        Write-Host '如需一并删除（含加密密码）: Remove-Item -Recurse -Force "$HOME\.myssh"' -ForegroundColor DarkGray
-    }
-}
-
 Remove-Module myssh -Force -ErrorAction SilentlyContinue
+
+$cfgHome = if ($env:MYSSH_HOME) { $env:MYSSH_HOME } else { Join-Path $HOME '.myssh' }
+if (Test-Path -LiteralPath $cfgHome) {
+    Write-Host ''
+    Write-Host "Config kept: $cfgHome" -ForegroundColor DarkGray
+    Write-Host 'Delete secrets/config:  Remove-Item -Recurse -Force "$HOME\.myssh"' -ForegroundColor DarkGray
+}
 
 Write-Host ''
 Write-Host '✔ myssh uninstalled' -ForegroundColor Green
-Write-Host '请重新打开终端使 PATH / Profile 生效。' -ForegroundColor DarkGray
+Write-Host 'Re-open your terminal so PATH changes apply.' -ForegroundColor DarkGray
 Write-Host ''

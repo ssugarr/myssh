@@ -1,0 +1,92 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version without v prefix (e.g. 0.4.0). Empty = read from myssh.psd1'
+        required: false
+        default: ''
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET (for WiX)
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Resolve version
+        id: ver
+        shell: pwsh
+        run: |
+          $v = '${{ github.event.inputs.version }}'.Trim()
+          if (-not $v) {
+            if ($env:GITHUB_REF_TYPE -eq 'tag' -and $env:GITHUB_REF_NAME -match '^v(.+)$') {
+              $v = $Matches[1]
+            } else {
+              $psd1 = Import-PowerShellDataFile ./myssh.psd1
+              $v = [string]$psd1.ModuleVersion
+            }
+          }
+          "version=$v" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
+          Write-Host "Release version: $v"
+
+      - name: Build artifacts
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          & ./scripts/Build-Release.ps1 -Version '${{ steps.ver.outputs.version }}'
+          Get-ChildItem ./dist -File | Format-Table Name, Length
+
+      - name: Create GitHub Release
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $v = '${{ steps.ver.outputs.version }}'
+          $tag = "v$v"
+          $title = "myssh $v"
+          $notes = @"
+          ## Install (CLI command, not a GUI app)
+
+          ### Option A — MSI
+          1. Download ``myssh-$v-win-x64.msi``
+          2. Install
+          3. Re-open terminal → ``myssh version``
+
+          ### Option B — Zip + Setup.cmd
+          1. Download ``myssh-$v-win-x64.zip`` and unzip
+          2. Double-click ``Setup.cmd``
+          3. Re-open terminal → ``myssh version``
+
+          Requires [PowerShell 7+](https://aka.ms/powershell) and Windows OpenSSH client.
+
+          ## Files
+          - ``myssh-$v-win-x64.msi`` (+ ``.sha256``)
+          - ``myssh-$v-win-x64.zip`` (+ ``.sha256``)
+          "@
+
+          $assets = @(Get-ChildItem ./dist -File | Where-Object { $_.Extension -in '.zip', '.msi', '.sha256' } | ForEach-Object FullName)
+          if ($assets.Count -lt 1) { throw 'No release assets in dist/' }
+
+          # Create tag locally if workflow_dispatch without tag
+          git config user.name 'github-actions'
+          git config user.email 'github-actions@users.noreply.github.com'
+          $existing = gh release view $tag 2>$null
+          if ($LASTEXITCODE -eq 0) {
+            gh release upload $tag @assets --clobber
+          } else {
+            gh release create $tag @assets --title $title --notes $notes
+          }

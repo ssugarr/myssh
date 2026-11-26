@@ -6,6 +6,9 @@ Thumbs.db
 *.user
 *.bak
 
+# Build output
+dist/
+
 # Editor / IDE
 .vscode/
 .idea/

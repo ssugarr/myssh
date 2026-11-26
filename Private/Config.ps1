@@ -1,7 +1,7 @@
 ﻿# Config & state persistence under ~/.myssh
 
 function Get-MySshVersion {
-    '0.3.1'
+    '0.4.0'
 }
 
 function Get-MySshHome {

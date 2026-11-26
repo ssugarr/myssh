@@ -24,32 +24,40 @@ Windows 终端里的个人 SSH 连接管理工具：保存主机、一键连接�
 
 ## 安装
 
+安装后终端里多一个命令行工具 **`myssh`**（不是带窗口的独立软件）。
+
+### 方式 A：GitHub Releases（推荐）
+
+打开 [Releases](https://github.com/ssugarr/myssh/releases)，下载：
+
+- **`myssh-*-win-x64.msi`** → 双击安装，重开终端  
+- 或 **`myssh-*-win-x64.zip`** → 解压后双击 `Setup.cmd`
+
+```powershell
+myssh version
+myssh help
+```
+
+### 方式 B：从源码
+
 ```powershell
 git clone https://github.com/ssugarr/myssh.git
 cd myssh
 pwsh -File .\install.ps1
 ```
 
-安装脚本会：
-
-1. 把模块链接到 `~/Documents/PowerShell/Modules/myssh`
-2. 将 `bin/` 加入用户 PATH
-3. 在 Profile 中自动 `Import-Module myssh`
-
-然后**重新打开终端**：
-
-```powershell
-myssh status
-myssh help
-```
+安装会写入 `%LOCALAPPDATA%\Programs\myssh`、加入用户 PATH，并注册 PowerShell 模块。
 
 ### 卸载
 
 ```powershell
-pwsh -File .\uninstall.ps1
+# 若从源码/zip 安装
+pwsh -File "$env:LOCALAPPDATA\Programs\myssh\uninstall.ps1"
+
+# 若用 MSI 安装：设置 → 应用 → myssh → 卸载
 ```
 
-默认保留 `~/.myssh/` 配置与加密密码；若要一并删除：
+配置目录 `~/.myssh/` 默认保留。要连同密码一起删：
 
 ```powershell
 Remove-Item -Recurse -Force $HOME\.myssh
